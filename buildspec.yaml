@@ -26,7 +26,7 @@ phases:
       - aws secretsmanager get-secret-value --secret-id SECRET_ENFRANCHISE_PYTHON | jq -r .SecretString  > .env 
 
       # # Docker environment
-      # - aws secretsmanager get-secret-value --secret-id STORAGE_AWS | jq -r .SecretString  > STORAGE_AWS.txt 
+      - aws secretsmanager get-secret-value --secret-id STORAGE_AWS | jq -r .SecretString  > STORAGE_AWS.txt 
       # - aws secretsmanager get-secret-value --secret-id DB_AWS | jq -r .SecretString > DB_AWS.txt
       # - aws secretsmanager get-secret-value --secret-id DB_NAME | jq -r .SecretString > DB_NAME.txt
       # - aws secretsmanager get-secret-value --secret-id DB_USER | jq -r .SecretString > DB_USER.txt
@@ -39,7 +39,7 @@ phases:
       # - aws secretsmanager get-secret-value --secret-id EMAIL_HOST_PASSWORD | jq -r .SecretString > EMAIL_HOST_PASSWORD.txt
 
       # # environment export
-      # - export STORAGE_AWS="$(cat STORAGE_AWS.txt)"
+      - export STORAGE_AWS="$(cat STORAGE_AWS.txt)"
       # - export DB_AWS="$(cat DB_AWS.txt)" 
       # - export DB_NAME="$(cat DB_NAME.txt)"  
       # - export DB_USER="$(cat DB_USER.txt)" 
@@ -53,7 +53,7 @@ phases:
 
     
       # # Additional Commands to view your credentials           
-      # - echo "STORAGE_AWS...  ${STORAGE_AWS}"            
+      - echo "STORAGE_AWS...  ${STORAGE_AWS}"            
       # - echo "DB_AWS...  ${DB_AWS}"            
       # - echo "DB_NAME...  ${DB_NAME}"            
       # - echo "DB_USER...  $DB_USER"             
