@@ -37,7 +37,7 @@ COPY nginx.conf.normal /etc/nginx/sites-available/default
 COPY supervisord.conf.normal /etc/supervisor/conf.d/supervisord.conf
 
 # Set up permissions
-RUN chown -R www-data:www-data /django    
+RUN chown -R www-data:www-data /django     
 
 # Expose port 8000 for the Django application
 EXPOSE 8000
