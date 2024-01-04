@@ -1,0 +1,115 @@
+version: 0.2
+
+phases:
+
+  install:
+    commands:
+      - echo "Install Phase - Nothing to do using latest Amazon Linux Docker Image for CodeBuild which has all AWS Tools - https://github.com/aws/aws-codebuild-docker-images/blob/master/al2/x86_64/standard/3.0/Dockerfile"
+  
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+
+      - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 298398654240.dkr.ecr.eu-west-2.amazonaws.com
+      - REPOSITORY_URI=298398654240.dkr.ecr.eu-west-2.amazonaws.com/bmp-efranchise-python-app-ecr
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+       
+       # Update Image tag in our Kubernetes Deployment Manifest 
+      - echo "Update Image tag in kube-manifest..."
+      - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$IMAGE_TAG"'@' kube-manifests/02-DEVOPS-Nginx-Deployment.yml
+      # Update Kube config Home Directory
+      - export KUBECONFIG=$HOME/.kube/config
+
+
+      # Docker environment
+      - aws secretsmanager get-secret-value --secret-id SECRET_ENFRANCHISE_PYTHON | jq -r .SecretString  > .env 
+
+      # Docker environment
+      - aws secretsmanager get-secret-value --secret-id STORAGE_AWS | jq -r .SecretString  > STORAGE_AWS.txt 
+      - aws secretsmanager get-secret-value --secret-id DB_AWS | jq -r .SecretString > DB_AWS.txt
+      - aws secretsmanager get-secret-value --secret-id DB_NAME | jq -r .SecretString > DB_NAME.txt
+      - aws secretsmanager get-secret-value --secret-id DB_USER | jq -r .SecretString > DB_USER.txt
+      - aws secretsmanager get-secret-value --secret-id DB_PASSWORD | jq -r .SecretString > DB_PASSWORD.txt
+      - aws secretsmanager get-secret-value --secret-id DB_HOST | jq -r .SecretString > DB_HOST.txt
+      # - aws secretsmanager get-secret-value --secret-id AWS_ACCESS_KEY_ID | jq -r .SecretString > AWS_ACCESS_KEY_ID.txt
+      # - aws secretsmanager get-secret-value --secret-id AWS_SECRET_ACCESS_KEY | jq -r .SecretString > AWS_SECRET_ACCESS_KEY.txt
+      # - aws secretsmanager get-secret-value --secret-id AWS_STORAGE_BUCKET_NAME | jq -r .SecretString > AWS_STORAGE_BUCKET_NAME.txt
+      - aws secretsmanager get-secret-value --secret-id email_host_user | jq -r .SecretString > email_host_user.txt
+      - aws secretsmanager get-secret-value --secret-id EMAIL_HOST_PASSWORD | jq -r .SecretString > EMAIL_HOST_PASSWORD.txt
+
+      # environment export
+      - export STORAGE_AWS="$(cat STORAGE_AWS.txt)"
+      - export DB_AWS="$(cat DB_AWS.txt)" 
+      - export DB_NAME="$(cat DB_NAME.txt)"  
+      - export DB_USER="$(cat DB_USER.txt)" 
+      - export DB_PASSWORD="$(cat DB_PASSWORD.txt)" 
+      - export DB_HOST="$(cat DB_HOST.txt)" 
+      # - export AWS_ACCESS_KEY_ID="$(cat AWS_ACCESS_KEY_ID.txt)" 
+      # - export AWS_SECRET_ACCESS_KEY="$(cat AWS_SECRET_ACCESS_KEY.txt)" 
+      # - export AWS_STORAGE_BUCKET_NAME="$(cat AWS_STORAGE_BUCKET_NAME.txt)" 
+      - export email_host_user="$(cat email_host_user.txt)" 
+      - export EMAIL_HOST_PASSWORD="$(cat EMAIL_HOST_PASSWORD.txt)" 
+
+    
+      # Additional Commands to view your credentials           
+      - echo "STORAGE_AWS...  ${STORAGE_AWS}"            
+      - echo "DB_AWS...  ${DB_AWS}"            
+      - echo "DB_NAME...  ${DB_NAME}"            
+      - echo "DB_USER...  $DB_USER"             
+      - echo "DB_PASSWORD...  $DB_PASSWORD" 
+      - echo "DB_HOST...  $DB_HOST" 
+      # - echo "AWS_ACCESS_KEY_ID...  $AWS_ACCESS_KEY_ID" 
+      # - echo "AWS_SECRET_ACCESS_KEY...  $AWS_SECRET_ACCESS_KEY" 
+      # - echo "AWS_STORAGE_BUCKET_NAME...  $AWS_STORAGE_BUCKET_NAME" 
+      - echo "email_host_user...  $email_host_user" 
+      - echo "EMAIL_HOST_PASSWORD...  $EMAIL_HOST_PASSWORD" 
+
+
+  build:
+    commands:
+      # Build Docker Image
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build  --build-arg "STORAGE_AWS=${STORAGE_AWS}"  --build-arg "DB_AWS=${DB_AWS}"  --build-arg "DB_NAME=${DB_NAME}"   --build-arg "DB_USER=${DB_USER}"   --build-arg "DB_PASSWORD=${DB_PASSWORD}"  --build-arg "DB_HOST=${DB_HOST}"    --build-arg "email_host_user=${email_host_user}"  --build-arg "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" -t $REPOSITORY_URI:$IMAGE_TAG .
+      # - docker build  --build-arg "STORAGE_AWS=${STORAGE_AWS}"  --build-arg "DB_AWS=${DB_AWS}"  --build-arg "DB_NAME=${DB_NAME}"   --build-arg "DB_USER=${DB_USER}"   --build-arg "DB_PASSWORD=${DB_PASSWORD}"  --build-arg "DB_HOST=${DB_HOST}"   --build-arg "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"   --build-arg "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"  --build-arg "AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}"  --build-arg "email_host_user=${email_host_user}"  --build-arg "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" -t $REPOSITORY_URI:$IMAGE_TAG .
+     
+    
+  # build:
+  #   commands:
+  #     # Build Docker Image
+  #     - echo Build started on `date`
+  #     - echo Building the Docker image...
+  #     - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+
+  post_build:
+    commands:
+      # Push Docker Image to ECR Repository 
+      - echo Build completed on `date`
+      - echo "Pushing the Docker image to ECR Repository"
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo "Docker Image Push to ECR Completed -  $REPOSITORY_URI:$TAG"  
+      # - echo Writing image definitions file...
+      # - printf '[{"name":"bmp-new-api-app-ecr","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      # Extracting AWS Credential Information using STS Assume Role for kubectl
+      
+      - echo "Setting Environment Variables related to AWS CLI for Kube Config Setup"          
+      - CREDENTIALS=$(aws sts assume-role --role-arn $EKS_KUBECTL_ROLE_ARN --role-session-name codebuild-kubectl --duration-seconds 900)
+      - export AWS_ACCESS_KEY_ID="$(echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"
+      - export AWS_SECRET_ACCESS_KEY="$(echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"
+      - export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
+      - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
+      # Setup kubectl with our EKS Cluster              
+      - echo "Update Kube Config"      
+      - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $EKS_REGION_NAME
+      # Apply changes to our Application using kubectl
+      - echo "Apply changes to kube manifests"            
+      - kubectl apply -f kube-manifests/
+      - echo "Completed applying changes to Kubernetes Objects"           
+      # Create Artifacts which we can use if we want to continue our pipeline for other stages 
+      - printf '[{"name":"02-DEVOPS-Nginx-Deployment.yml","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
+                  
+artifacts:
+  files: 
+    - build.json   
+    - kube-manifests/*
