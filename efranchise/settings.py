@@ -118,8 +118,8 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'ehub_db',
-            'USER': 'ehub_user',
+            'NAME': 'bmp_efranchise_python',
+            'USER': 'bmp_efranchise_python',
             'PASSWORD': 'BMPMetr0@321!',
             'HOST': '114.130.89.227',
             'PORT': '3306',
