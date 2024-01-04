@@ -186,8 +186,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = ['https://*.mybritishcourier.com','https://*.127.0.0.1', 'https://britishmarketplace.co.uk',
                         'https://*.114.130.89.227', 'https://*.britainmarketplace.com', 'https://dev2.britishmarketplace.co.uk',
-                        'https://dev.efeh.britishmarketplace.co.uk', 'admin.business.britishmarketplace.co.uk',
-                        'www.admin.business.britishmarketplace.co.uk']
+                        'https://dev.efeh.britishmarketplace.co.uk', 'https://admin.business.britishmarketplace.co.uk',
+                        'https://www.admin.business.britishmarketplace.co.uk']
 
 FRONT_END_URL = "https://business1.britishmarketplace.co.uk"
 
