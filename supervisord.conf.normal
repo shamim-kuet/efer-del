@@ -1,0 +1,15 @@
+[supervisord]
+nodaemon=true
+
+[program:nginx]
+command=nginx -g "daemon off;"
+autorestart=true
+
+[program:queue-worker]
+autorestart=true
+command=python manage.py runserver 0.0.0.0:8000
+directory=/django  ; Set the working directory for the queue worker
+autostart=true             ; Start the program automatically when supervisord starts
+autorestart=true           ; Restart the program when it exits unexpectedly
+user=www-data              ; Change this to the appropriate user
+# user=nginx              ; Change this to the appropriate user

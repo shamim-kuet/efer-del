@@ -29,7 +29,9 @@ DEBUG = True
 ALLOWED_HOSTS = ['mybritishcourier.com', '127.0.0.1','admin.mybritishcourier.com', '192.168.0.192',
                  'britishmarketplace.co.uk', '114.130.89.227', 'britainmarketplace.com', '18.135.50.77',
                  'dev2.britishmarketplace.co.uk', 'dev.efeh.britishmarketplace.co.uk',
-                 'dev.business.britishmarketplace.co.uk', 'dev.next.britishmarketplace.co.uk']
+                 'dev.business.britishmarketplace.co.uk', 'dev.next.britishmarketplace.co.uk',
+                 'admin.business.britishmarketplace.co.uk','www.admin.business.britishmarketplace.co.uk',
+                 'business1.britishmarketplace.co.uk','www.business1s.britishmarketplace.co.uk']
 
 # Application definition
 
@@ -184,10 +186,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = ['https://*.mybritishcourier.com','https://*.127.0.0.1', 'https://britishmarketplace.co.uk',
                         'https://*.114.130.89.227', 'https://*.britainmarketplace.com', 'https://dev2.britishmarketplace.co.uk',
-                        'https://dev.efeh.britishmarketplace.co.uk', 'https://www.dev.business.britishmarketplace.co.uk',
-                        'https://dev.next.britishmarketplace.co.uk']
+                        'https://dev.efeh.britishmarketplace.co.uk', 'admin.business.britishmarketplace.co.uk',
+                        'www.admin.business.britishmarketplace.co.uk']
 
-FRONT_END_URL = "https://mybritishcourier.com"
+FRONT_END_URL = "https://business1.britishmarketplace.co.uk"
 
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

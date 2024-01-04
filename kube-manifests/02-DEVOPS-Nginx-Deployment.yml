@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eks-bmp-efranchise-python-deployment
+  namespace: dev
+  labels:
+    app: eks-bmp-efranchise-python
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eks-bmp-efranchise-python
+  template:
+    metadata:
+      labels:
+        app: eks-bmp-efranchise-python
+    spec:
+      containers:
+        - name: eks-bmp-efranchise-python
+          image: CONTAINER_IMAGE
+          # image: 298398654240.dkr.ecr..amazonaws.com/bmp-efranchise-python-app-ecr:latest
+          ports:
+            - containerPort: 80

@@ -1,0 +1,63 @@
+# Annotations Reference:  https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/ingress/annotation/
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eks-bmp-efranchise-python-ingress-service
+  namespace: dev
+  labels:
+    app: eks-bmp-efranchise-python
+  annotations:
+    # Load Balancer Name
+    alb.ingress.kubernetes.io/load-balancer-name: eks-bmp-efrans-python-ingress
+    # Ingress Core Settings  
+    #kubernetes.io/ingress.class: "alb" (OLD INGRESS CLASS NOTATION - STILL WORKS BUT RECOMMENDED TO USE IngressClass Resource)
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    # Health Check Settings
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP 
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    #Important Note:  Need to add health check path annotations in service level if we are planning to use multiple targets in a load balancer    
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/success-codes: '200'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'  
+    ## SSL Settings
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    alb.ingress.kubernetes.io/certificate-arn: | 
+      arn:aws:acm:eu-west-2:298398654240:certificate/5562b83f-f974-48e3-96cf-dece0b0dc524,
+      arn:aws:acm:eu-west-2:298398654240:certificate/b0994b6a-0086-4853-b7f0-103f2d8db7e9
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm::298398654240:certificate/1af50867-59a7-470c-b230-4156c9018424
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06 #Optional (Picks default if not used) 
+    alb.ingress.kubernetes.io/add-response-headers: |
+      X-Frame-Options: "DENY"
+      X-Content-Type-Options: "nosniff"
+      Content-Security-Policy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+      Referrer-Policy: "same-origin"   
+    # SSL Redirect Setting
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    # External DNS - For creating a Record Set in Route53
+    # external-dns.alpha.kubernetes.io/hostname: admin.business.britishmarketplace.co.uk, www.admin.business.britishmarketplace.co.uk
+    external-dns.alpha.kubernetes.io/hostname: admin.business.britishmarketplace.co.uk, www.admin.business.britishmarketplace.co.uk
+spec:
+  ingressClassName: eks-bmp-efranchise-python-ingress-class   # Ingress Class
+  rules:
+    - host: admin.business.britishmarketplace.co.uk
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: eks-bmp-efranchise-python-nodeport-service
+                port:
+                  number: 80
+    - host: www.admin.business.britishmarketplace.co.uk
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: eks-bmp-efranchise-python-nodeport-service
+                port:
+                  number: 80
