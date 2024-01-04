@@ -66,20 +66,21 @@ phases:
       - echo "EMAIL_HOST_PASSWORD...  $EMAIL_HOST_PASSWORD" 
 
 
-  # build:
-  #   commands:
-  #     # Build Docker Image
-  #     - echo Build started on `date`
-  #     - echo Building the Docker image...
-  #     - docker build  --build-arg "STORAGE_AWS=${STORAGE_AWS}"  --build-arg "DB_AWS=${DB_AWS}"  --build-arg "DB_NAME=${DB_NAME}"   --build-arg "DB_USER=${DB_USER}"   --build-arg "DB_PASSWORD=${DB_PASSWORD}"  --build-arg "DB_HOST=${DB_HOST}"   --build-arg "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"   --build-arg "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"  --build-arg "AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}"  --build-arg "email_host_user=${email_host_user}"  --build-arg "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" -t $REPOSITORY_URI:$IMAGE_TAG .
-
-    
   build:
     commands:
       # Build Docker Image
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker build  --build-arg "STORAGE_AWS=${STORAGE_AWS}"  --build-arg "DB_AWS=${DB_AWS}"  --build-arg "DB_NAME=${DB_NAME}"   --build-arg "DB_USER=${DB_USER}"   --build-arg "DB_PASSWORD=${DB_PASSWORD}"  --build-arg "DB_HOST=${DB_HOST}"    --build-arg "email_host_user=${email_host_user}"  --build-arg "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" -t $REPOSITORY_URI:$IMAGE_TAG .
+      # - docker build  --build-arg "STORAGE_AWS=${STORAGE_AWS}"  --build-arg "DB_AWS=${DB_AWS}"  --build-arg "DB_NAME=${DB_NAME}"   --build-arg "DB_USER=${DB_USER}"   --build-arg "DB_PASSWORD=${DB_PASSWORD}"  --build-arg "DB_HOST=${DB_HOST}"   --build-arg "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"   --build-arg "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"  --build-arg "AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}"  --build-arg "email_host_user=${email_host_user}"  --build-arg "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" -t $REPOSITORY_URI:$IMAGE_TAG .
+     
+    
+  # build:
+  #   commands:
+  #     # Build Docker Image
+  #     - echo Build started on `date`
+  #     - echo Building the Docker image...
+  #     - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
 
   post_build:
     commands:
