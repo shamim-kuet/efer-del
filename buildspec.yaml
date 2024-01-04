@@ -21,15 +21,67 @@ phases:
       # Update Kube config Home Directory
       - export KUBECONFIG=$HOME/.kube/config
 
+
       # Docker environment
       - aws secretsmanager get-secret-value --secret-id SECRET_ENFRANCHISE_PYTHON | jq -r .SecretString  > .env 
+
+      # Docker environment
+      - aws secretsmanager get-secret-value --secret-id STORAGE_AWS | jq -r .SecretString  > STORAGE_AWS.txt 
+      - aws secretsmanager get-secret-value --secret-id DB_AWS | jq -r .SecretString > DB_AWS.txt
+      - aws secretsmanager get-secret-value --secret-id DB_NAME | jq -r .SecretString > DB_NAME.txt
+      - aws secretsmanager get-secret-value --secret-id DB_USER | jq -r .SecretString > DB_USER.txt
+      - aws secretsmanager get-secret-value --secret-id DB_PASSWORD | jq -r .SecretString > DB_PASSWORD.txt
+      - aws secretsmanager get-secret-value --secret-id DB_HOST | jq -r .SecretString > DB_HOST.txt
+      - aws secretsmanager get-secret-value --secret-id AWS_ACCESS_KEY_ID | jq -r .SecretString > AWS_ACCESS_KEY_ID.txt
+      - aws secretsmanager get-secret-value --secret-id AWS_SECRET_ACCESS_KEY | jq -r .SecretString > AWS_SECRET_ACCESS_KEY.txt
+      - aws secretsmanager get-secret-value --secret-id AWS_STORAGE_BUCKET_NAME | jq -r .SecretString > AWS_STORAGE_BUCKET_NAME.txt
+      - aws secretsmanager get-secret-value --secret-id email_host_user | jq -r .SecretString > email_host_user.txt
+      - aws secretsmanager get-secret-value --secret-id EMAIL_HOST_PASSWORD | jq -r .SecretString > EMAIL_HOST_PASSWORD.txt
+
+      # environment export
+      - export STORAGE_AWS="$(cat STORAGE_AWS.txt)"
+      - export DB_AWS="$(cat DB_AWS.txt)" 
+      - export DB_NAME="$(cat DB_NAME.txt)"  
+      - export DB_USER="$(cat DB_USER.txt)" 
+      - export DB_PASSWORD="$(cat DB_PASSWORD.txt)" 
+      - export DB_HOST="$(cat DB_HOST.txt)" 
+      - export AWS_ACCESS_KEY_ID="$(cat AWS_ACCESS_KEY_ID.txt)" 
+      - export AWS_SECRET_ACCESS_KEY="$(cat AWS_SECRET_ACCESS_KEY.txt)" 
+      - export AWS_STORAGE_BUCKET_NAME="$(cat AWS_STORAGE_BUCKET_NAME.txt)" 
+      - export email_host_user="$(cat email_host_user.txt)" 
+      - export AWS_SECRET_ACCESS_KEY="$(cat AWS_SECRET_ACCESS_KEY.txt)" 
+
+    
+      # Additional Commands to view your credentials           
+      - echo "STORAGE_AWS...  ${STORAGE_AWS}"            
+      - echo "DB_AWS...  ${DB_AWS}"            
+      - echo "DB_NAME...  ${DB_NAME}"            
+      - echo "DB_USER...  $DB_USER"             
+      - echo "DB_PASSWORD...  $DB_PASSWORD" 
+      - echo "DB_HOST...  $DB_HOST" 
+      - echo "AWS_ACCESS_KEY_ID...  $AWS_ACCESS_KEY_ID" 
+      - echo "AWS_SECRET_ACCESS_KEY...  $AWS_SECRET_ACCESS_KEY" 
+      - echo "AWS_STORAGE_BUCKET_NAME...  $AWS_STORAGE_BUCKET_NAME" 
+      - echo "email_host_user...  $email_host_user" 
+      - echo "EMAIL_HOST_PASSWORD...  $EMAIL_HOST_PASSWORD" 
+
 
   build:
     commands:
       # Build Docker Image
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker build  --build-arg "STORAGE_AWS=${STORAGE_AWS}"  --build-arg "DB_AWS=${DB_AWS}"  --build-arg "DB_NAME=${DB_NAME}"   --build-arg "DB_USER=${DB_USER}"   --build-arg "DB_PASSWORD=${DB_PASSWORD}"  --build-arg "DB_HOST=${DB_HOST}"   --build-arg "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"   --build-arg "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"  --build-arg "AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}"  --build-arg "email_host_user=${email_host_user}"  --build-arg "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" -t $REPOSITORY_URI:$IMAGE_TAG .
+
+      # Docker environment
+      - aws secretsmanager get-secret-value --secret-id SECRET_ENFRANCHISE_PYTHON | jq -r .SecretString  > .env 
+
+  # build:
+  #   commands:
+  #     # Build Docker Image
+  #     - echo Build started on `date`
+  #     - echo Building the Docker image...
+  #     - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
 
   post_build:
     commands:
